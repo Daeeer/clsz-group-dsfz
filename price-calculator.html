@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短视频报价计算器</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* 全局样式 */
+        body {
+            background-color: #000;
+            color: #f5f5f7;
+            font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 动画效果 */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 标题样式 */
+        .apple-headline {
+            font-size: 48px;
+            font-weight: 600;
+            letter-spacing: -0.003em;
+            line-height: 1.08;
+            margin-bottom: 0.4em;
+            background: linear-gradient(90deg, #2d7fea, #42b4ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .apple-subheadline {
+            font-size: 24px;
+            font-weight: 400;
+            letter-spacing: 0.009em;
+            margin-bottom: 1.6em;
+            color: #86868b;
+        }
+
+        /* 表单元素 - 增强版 */
+        .form-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.42, 0, 0.58, 1);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.75rem center;
+            background-repeat: no-repeat;
+            background-size: 1.25em 1.25em;
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+            color: white;
+            font-size: 16px;
+        }
+
+        /* 浏览器特定样式 */
+        @media screen and (-webkit-min-device-pixel-ratio:0) {
+            .form-select {
+                padding-right: 30px;
+            }
+
+            .form-select option {
+                background-color: #1c1c1e;
+                color: #f5f5f7;
+            }
+
+            .form-select option:checked {
+                background-color: #0084ff;
+                color: white;
+            }
+        }
+
+        /* Firefox特定样式 */
+        @-moz-document url-prefix() {
+            .form-select option {
+                background-color: #1c1c1e;
+                color: #f5f5f7;
+            }
+
+            .form-select option:checked {
+                background-color: #0084ff;
+                color: white;
+                box-shadow: 0 0 0 30px #0084ff inset;
+            }
+        }
+
+        /* 恢复focus状态样式 */
+        .form-select:focus {
+            outline: none;
+            border-color: rgba(108, 156, 255, 0.5);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+            background-color: rgba(255, 255, 255, 0.1);
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a0c0ff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        }
+
+        /* 统一悬停时为蓝色 */
+        .form-select:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        /* 自定义选择框样式 */
+        .form-select option {
+            padding: 12px;
+            font-size: 16px;
+            transition: background-color 0.2s;
+            background-color: #1c1c1e !important;
+            color: #f5f5f7 !important;
+        }
+
+        /* 统一选中项和悬停样式 */
+        .form-select option:checked {
+            background-color: #0084ff !important;
+            color: white !important;
+            font-weight: 500;
+        }
+
+        /* 悬停状态统一为蓝色 */
+        .form-select option:hover {
+            background-color: rgba(59, 130, 246, 0.2) !important;
+            color: white !important;
+        }
+
+        /* 未选中项统一样式 */
+        .form-select option:not(:checked):not(:hover) {
+            background-color: #1c1c1e !important;
+            color: #f5f5f7 !important;
+        }
+
+        /* 增强表单交互体验 */
+        .form-group {
+            position: relative;
+            transition: transform 0.2s ease;
+        }
+
+        .form-group:focus-within .form-label {
+            color: #0084ff;
+            transform: translateY(-2px);
+        }
+
+        .form-group:hover .form-label {
+            color: #a1a1a6;
+        }
+
+        /* 增强选择框视觉反馈 */
+        select:focus+.select-arrow {
+            transform: rotate(180deg);
+            color: #0084ff;
+        }
+
+        /* 下拉框打开和选中状态样式 */
+        .select-active {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            border-color: #0084ff !important;
+            box-shadow: 0 0 0 2px rgba(0, 132, 255, 0.3) !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%230084ff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+        }
+
+        .select-changed {
+            animation: selectPulse 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes selectPulse {
+            0% {
+                background-color: rgba(0, 132, 255, 0.2);
+            }
+
+            50% {
+                background-color: rgba(0, 132, 255, 0.3);
+            }
+
+            100% {
+                background-color: rgba(255, 255, 255, 0.06);
+            }
+        }
+
+        .form-label {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.012em;
+            margin-bottom: 8px;
+            color: #a1a1a6;
+            display: block;
+            transition: all 0.2s ease;
+        }
+
+        /* 按钮样式 */
+        .apple-button {
+            background: linear-gradient(90deg, #006edc, #0091ff);
+            border: none;
+            padding: 14px 30px;
+            border-radius: 980px;
+            font-size: 17px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            color: white;
+            transition: all 0.3s cubic-bezier(0.42, 0, 0.58, 1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 1px 15px rgba(0, 110, 220, 0.2);
+        }
+
+        .apple-button:hover {
+            transform: scale(1.02);
+            box-shadow: 0 1px 20px rgba(0, 110, 220, 0.3);
+            background: linear-gradient(90deg, #0062c3, #0084ec);
+        }
+
+        .apple-button:focus {
+            outline: none;
+        }
+
+        /* 卡片样式 */
+        .apple-card {
+            background: rgba(22, 22, 23, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 18px;
+            padding: 35px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .apple-card:hover {
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
+            transform: translateY(-2px);
+        }
+
+        /* 结果显示 */
+        .result-card {
+            background: linear-gradient(135deg, rgba(22, 22, 23, 0.95), rgba(26, 26, 30, 0.9));
+            border-radius: 18px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .result-label {
+            color: #86868b;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .result-value {
+            color: #f5f5f7;
+            font-weight: 500;
+            font-size: 17px;
+        }
+
+        .price-value {
+            background: linear-gradient(90deg, #2d7fea, #42b4ff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-size: 38px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        /* 分割线 */
+        .divider {
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+            margin: 30px 0;
+        }
+
+        /* 工具提示 */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* 装饰元素 */
+        .decoration-circle {
+            position: absolute;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1), transparent 70%);
+            border-radius: 50%;
+            z-index: -1;
+        }
+
+        .decoration-circle-1 {
+            width: 700px;
+            height: 700px;
+            top: -300px;
+            left: -300px;
+            opacity: 0.4;
+        }
+
+        .decoration-circle-2 {
+            width: 500px;
+            height: 500px;
+            bottom: -200px;
+            right: -200px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen relative">
+    <!-- 装饰元素 -->
+    <div class="decoration-circle decoration-circle-1"></div>
+    <div class="decoration-circle decoration-circle-2"></div>
+
+    <div class="container py-16">
+        <a href="index.html"
+            class="inline-flex items-center text-blue-400 hover:text-blue-300 mb-10 transition-all duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd"
+                    d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                    clip-rule="evenodd" />
+            </svg>
+            <span>返回主页</span>
+        </a>
+
+        <div class="text-center mb-16 fade-in">
+            <h1 class="apple-headline">短视频报价计算器</h1>
+            <h2 class="apple-subheadline max-w-3xl mx-auto">根据您的具体需求，获取定制化的短视频制作方案和精准报价，只需简单几步</h2>
+        </div>
+
+        <div class="apple-card fade-in" style="animation-delay: 0.1s;">
+            <div class="grid lg:grid-cols-2 gap-12">
+                <!-- 表单部分 -->
+                <div class="space-y-8">
+                    <!-- 视频类型选择 -->
+                    <div class="form-group">
+                        <label class="form-label" for="video-type">视频类型</label>
+                        <select id="video-type"
+                            class="form-select w-full bg-transparent text-white px-4 py-4 rounded-xl">
+                            <option value="企业宣传片">企业宣传片</option>
+                            <option value="品牌TVC">品牌TVC</option>
+                            <option value="抖音短视频">抖音短视频</option>
+                            <option value="产品视频">产品视频</option>
+                            <option value="AI视频">AI视频</option>
+                        </select>
+                    </div>
+
+                    <!-- 片子时长 -->
+                    <div class="form-group" id="duration-group">
+                        <label class="form-label" for="video-duration">片子时长</label>
+                        <select id="video-duration"
+                            class="form-select w-full bg-transparent text-white px-4 py-4 rounded-xl">
+                            <!-- 选项将由JS动态生成 -->
+                        </select>
+                    </div>
+
+                    <!-- 文案策划 -->
+                    <div class="form-group" id="copywriting-group">
+                        <label class="form-label" for="copywriting">文案策划</label>
+                        <select id="copywriting"
+                            class="form-select w-full bg-transparent text-white px-4 py-4 rounded-xl">
+                            <option value="自备文案">自备文案</option>
+                            <option value="创意文案">创意文案</option>
+                            <option value="全案策划">全案策划</option>
+                        </select>
+                    </div>
+
+                    <!-- 摄制水平 -->
+                    <div class="form-group" id="production-group">
+                        <label class="form-label" for="production-level">摄制水平</label>
+                        <select id="production-level"
+                            class="form-select w-full bg-transparent text-white px-4 py-4 rounded-xl">
+                            <option value="入门级">入门级</option>
+                            <option value="资深级">资深级</option>
+                            <option value="专业级">专业级</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 右侧表单 -->
+                <div class="space-y-8">
+                    <!-- 导演制片 -->
+                    <div class="form-group" id="director-group">
+                        <label class="form-label" for="director">导演制片</label>
+                        <select id="director" class="form-select w-full bg-transparent text-white px-4 py-4 rounded-xl">
+                            <option value="无">无</option>
+                            <option value="普通导演">普通导演</option>
+                            <option value="资深导演">资深导演</option>
+                        </select>
+                    </div>
+
+                    <!-- 演员模特 -->
+                    <div class="form-group" id="actors-group">
+                        <label class="form-label" for="actors">演员模特</label>
+                        <select id="actors" class="form-select w-full bg-transparent text-white px-4 py-4 rounded-xl">
+                            <option value="无">无</option>
+                            <option value="自备演员">自备演员</option>
+                            <option value="普通演员">普通演员</option>
+                            <option value="专业演员">专业演员</option>
+                            <option value="纯静物展示">纯静物展示</option>
+                        </select>
+                    </div>
+
+                    <!-- 场地棚租 -->
+                    <div class="form-group" id="location-group">
+                        <label class="form-label" for="location">场地棚租</label>
+                        <select id="location" class="form-select w-full bg-transparent text-white px-4 py-4 rounded-xl">
+                            <option value="无">无</option>
+                            <option value="自备场地">自备场地</option>
+                            <option value="简单场景">简单场景</option>
+                            <option value="场景棚租">场景棚租</option>
+                        </select>
+                    </div>
+
+                    <!-- 计算按钮 -->
+                    <div class="mt-10">
+                        <button id="calculate-price" class="apple-button w-full">
+                            <span class="mr-2">生成报价方案</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20"
+                                fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- 报价结果 -->
+            <div id="price-result" class="mt-8 hidden">
+                <h3 class="text-center text-2xl font-medium mb-8">您的定制方案</h3>
+                <div class="result-card">
+                    <div class="grid md:grid-cols-2 gap-8 mb-8">
+                        <div class="space-y-6">
+                            <div>
+                                <div class="result-label">视频类型</div>
+                                <div id="result-type" class="result-value">企业宣传片</div>
+                            </div>
+                            <div>
+                                <div class="result-label">片子时长</div>
+                                <div id="result-duration" class="result-value">1-3分钟</div>
+                            </div>
+                            <div>
+                                <div class="result-label">文案策划</div>
+                                <div id="result-copywriting" class="result-value">自备文案</div>
+                            </div>
+                            <div>
+                                <div class="result-label">摄制水平</div>
+                                <div id="result-production" class="result-value">入门级</div>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <div>
+                                <div class="result-label">导演制片</div>
+                                <div id="result-director" class="result-value">无</div>
+                            </div>
+                            <div>
+                                <div class="result-label">演员模特</div>
+                                <div id="result-actors" class="result-value">无</div>
+                            </div>
+                            <div>
+                                <div class="result-label">场地棚租</div>
+                                <div id="result-location" class="result-value">无</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+                        <div class="mb-6 md:mb-0">
+                            <div class="result-label">预估报价区间</div>
+                            <div id="final-price" class="price-value">¥15,000-30,000</div>
+                            <div class="text-xs text-gray-500 mt-1 tooltip">
+                                <span>什么因素影响报价？</span>
+                                <span class="tooltip-text align-left">报价受拍摄复杂度、<br>后期制作要求、<br>演员数量和场地租赁等因素影响</span>
+                            </div>
+                        </div>
+                        <div class="inline-flex space-x-4">
+                            <button id="reset-form"
+                                class="px-6 py-3 rounded-full text-blue-400 border border-blue-400 transition-all hover:bg-blue-400/10">
+                                重新计算
+                            </button>
+                            <button class="apple-button">
+                                <span>获取详细方案</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-10 text-center text-gray-500 text-sm fade-in" style="animation-delay: 0.3s;">
+            <p>© 2025 Dae. 所有报价仅供参考，最终以合同约定为准。</p>
+        </div>
+    </div>
+
+    <script>
+        // 价格配置
+        const priceConfig = {
+            // 基础价格配置（按视频类型）
+            basePrice: {
+                '企业宣传片': { min: 10000, max: 20000 },
+                '品牌TVC': { min: 30000, max: 50000 },
+                '抖音短视频': { min: 5000, max: 12000 },
+                '产品视频': { min: 8000, max: 15000 },
+                'AI视频': { min: 3000, max: 8000 }
+            },
+
+            // 时长系数
+            durationMultiplier: {
+                '1-3分钟': 1.2,
+                '3-5分钟': 1.5,
+                '7s-15s': 0.8,
+                '15-30s': 1.0,
+                '30s-60s': 1.2,
+                '15-60s': 1.1
+            },
+
+            // 文案策划附加费
+            copywritingPrice: {
+                '自备文案': 0,
+                '创意文案': 3000,
+                '全案策划': 8000
+            },
+
+            // 摄制水平附加费
+            productionPrice: {
+                '入门级': 0,
+                '资深级': 5000,
+                '专业级': 15000
+            },
+
+            // 导演制片附加费
+            directorPrice: {
+                '无': 0,
+                '普通导演': 3000,
+                '资深导演': 8000
+            },
+
+            // 演员餐饮附加费
+            actorsPrice: {
+                '无': 0,
+                '自备演员': 1000,
+                '普通演员': 5000,
+                '专业演员': 15000,
+                '纯静物展示': 0
+            },
+
+            // 场地棚租附加费
+            locationPrice: {
+                '无': 0,
+                '自备场地': 0,
+                '简单场景': 3000,
+                '场景棚租': 8000
+            }
+        };
+
+        // 视频类型对应字段配置
+        const videoTypeFields = {
+            '企业宣传片': {
+                'video-duration': true,
+                'copywriting': true,
+                'production-level': true,
+                'director': false,
+                'actors': false,
+                'location': false
+            },
+            '品牌TVC': {
+                'video-duration': true,
+                'copywriting': true,
+                'production-level': true,
+                'director': true,
+                'actors': false,
+                'location': false
+            },
+            '抖音短视频': {
+                'video-duration': true,
+                'copywriting': true,
+                'production-level': true,
+                'director': false,
+                'actors': true,
+                'location': false
+            },
+            '产品视频': {
+                'video-duration': true,
+                'copywriting': true,
+                'production-level': true,
+                'director': false,
+                'actors': true,
+                'location': true
+            },
+            'AI视频': {
+                'video-duration': false,
+                'copywriting': false,
+                'production-level': false,
+                'director': false,
+                'actors': false,
+                'location': false
+            }
+        };
+
+        // 视频类型对应的片子时长选项
+        const videoDurationOptions = {
+            '企业宣传片': [
+                { value: '1-3分钟', text: '1-3分钟' },
+                { value: '3-5分钟', text: '3-5分钟' }
+            ],
+            '品牌TVC': [
+                { value: '15-60s', text: '15-60s' },
+                { value: '1-3分钟', text: '1-3分钟' }
+            ],
+            '抖音短视频': [
+                { value: '7s-15s', text: '7s-15s' },
+                { value: '15-30s', text: '15-30s' },
+                { value: '30s-60s', text: '30s-60s' }
+            ],
+            '产品视频': [
+                { value: '7s-15s', text: '7s-15s' },
+                { value: '15-30s', text: '15-30s' },
+                { value: '30s-60s', text: '30s-60s' }
+            ],
+            'AI视频': [
+                { value: '30s-60s', text: '30s-60s' }
+            ]
+        };
+
+        // DOM元素
+        const calculateBtn = document.getElementById('calculate-price');
+        const resetBtn = document.getElementById('reset-form');
+        const priceResult = document.getElementById('price-result');
+        const finalPrice = document.getElementById('final-price');
+        const videoTypeSelect = document.getElementById('video-type');
+        const videoDurationSelect = document.getElementById('video-duration');
+
+        // 表单字段组
+        const formFields = {
+            'video-duration': document.getElementById('duration-group'),
+            'copywriting': document.getElementById('copywriting-group'),
+            'production-level': document.getElementById('production-group'),
+            'director': document.getElementById('director-group'),
+            'actors': document.getElementById('actors-group'),
+            'location': document.getElementById('location-group')
+        };
+
+        // 显示所选选项
+        const resultType = document.getElementById('result-type');
+        const resultDuration = document.getElementById('result-duration');
+        const resultCopywriting = document.getElementById('result-copywriting');
+        const resultProduction = document.getElementById('result-production');
+        const resultDirector = document.getElementById('result-director');
+        const resultActors = document.getElementById('result-actors');
+        const resultLocation = document.getElementById('result-location');
+
+        // 根据视频类型更新片子时长选项
+        function updateDurationOptions() {
+            const videoType = videoTypeSelect.value;
+            const options = videoDurationOptions[videoType];
+
+            // 清空现有选项
+            videoDurationSelect.innerHTML = '';
+
+            // 添加新选项
+            options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.text;
+                videoDurationSelect.appendChild(optionElement);
+            });
+        }
+
+        // 根据视频类型显示/隐藏相应字段
+        function updateFormFields() {
+            const videoType = videoTypeSelect.value;
+            const fieldConfig = videoTypeFields[videoType];
+
+            // 更新片子时长选项
+            updateDurationOptions();
+
+            // 遍历所有字段，根据配置显示或隐藏
+            for (const [fieldId, element] of Object.entries(formFields)) {
+                if (fieldConfig[fieldId]) {
+                    element.style.display = 'block';
+                    // 平滑过渡
+                    element.style.opacity = 1;
+                    element.style.transform = 'translateY(0)';
+                    element.style.pointerEvents = 'auto';
+                } else {
+                    // 平滑过渡
+                    element.style.opacity = 0;
+                    element.style.transform = 'translateY(10px)';
+                    element.style.pointerEvents = 'none';
+
+                    // 隐藏元素
+                    setTimeout(() => {
+                        if (element.style.opacity === '0') {
+                            element.style.display = 'none';
+                        }
+                    }, 300);
+
+                    // 重置隐藏字段的值
+                    const select = document.getElementById(fieldId);
+                    if (select) {
+                        select.selectedIndex = 0;
+                    }
+                }
+            }
+        }
+
+        // 初始化表单
+        function initForm() {
+            // 为表单元素添加过渡效果
+            for (const element of Object.values(formFields)) {
+                element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            }
+
+            // 设置视频类型变更监听
+            videoTypeSelect.addEventListener('change', function () {
+                updateFormFields();
+            });
+
+            // 增强选择框交互效果
+            enhanceSelectInteraction();
+
+            // 初次加载时更新表单
+            updateFormFields();
+
+            // 重置按钮功能
+            resetBtn.addEventListener('click', function () {
+                // 重置所有选择
+                videoTypeSelect.selectedIndex = 0;
+
+                // 更新表单字段
+                updateFormFields();
+
+                // 隐藏结果区域
+                priceResult.style.opacity = 0;
+                setTimeout(() => {
+                    priceResult.classList.add('hidden');
+                }, 300);
+            });
+        }
+
+        // 增强选择框交互
+        function enhanceSelectInteraction() {
+            const selects = document.querySelectorAll('.form-select');
+
+            selects.forEach(select => {
+                // 保存当前选中的值，用于比较变化
+                let previousValue = select.value;
+
+                // 打开下拉菜单时添加动画类
+                select.addEventListener('mousedown', function () {
+                    this.classList.add('select-active');
+                });
+
+                // 关闭下拉菜单时移除动画类
+                select.addEventListener('blur', function () {
+                    this.classList.remove('select-active');
+                });
+
+                // 值变化时的特效
+                select.addEventListener('change', function () {
+                    // 只有值真正改变时才应用特效
+                    if (this.value !== previousValue) {
+                        // 应用选中特效
+                        this.classList.add('select-changed');
+
+                        // 300ms后移除特效类
+                        setTimeout(() => {
+                            this.classList.remove('select-changed');
+                        }, 300);
+
+                        // 更新前一个值
+                        previousValue = this.value;
+                    }
+                });
+            });
+        }
+
+        // 结果显示处理
+        function updateResultDisplay(fields) {
+            // 视频类型和基本信息
+            resultType.textContent = fields.videoType;
+
+            // 根据字段显示状态更新结果展示
+            const fieldConfig = videoTypeFields[fields.videoType];
+
+            // 结果展示元素的父元素
+            const durationParent = resultDuration.parentElement;
+            const copywritingParent = resultCopywriting.parentElement;
+            const productionParent = resultProduction.parentElement;
+            const directorParent = resultDirector.parentElement;
+            const actorsParent = resultActors.parentElement;
+            const locationParent = resultLocation.parentElement;
+
+            // 根据配置显示或隐藏结果字段
+            durationParent.style.display = fieldConfig['video-duration'] ? 'block' : 'none';
+            copywritingParent.style.display = fieldConfig['copywriting'] ? 'block' : 'none';
+            productionParent.style.display = fieldConfig['production-level'] ? 'block' : 'none';
+            directorParent.style.display = fieldConfig['director'] ? 'block' : 'none';
+            actorsParent.style.display = fieldConfig['actors'] ? 'block' : 'none';
+            locationParent.style.display = fieldConfig['location'] ? 'block' : 'none';
+
+            // 更新显示的字段值
+            if (fieldConfig['video-duration']) resultDuration.textContent = fields.duration;
+            if (fieldConfig['copywriting']) resultCopywriting.textContent = fields.copywriting;
+            if (fieldConfig['production-level']) resultProduction.textContent = fields.production;
+            if (fieldConfig['director']) resultDirector.textContent = fields.director;
+            if (fieldConfig['actors']) resultActors.textContent = fields.actors;
+            if (fieldConfig['location']) resultLocation.textContent = fields.location;
+        }
+
+        // 添加动画效果
+        function addAnimationToResult() {
+            // 准备显示
+            priceResult.classList.remove('hidden');
+            priceResult.style.opacity = 0;
+            priceResult.style.transform = 'translateY(20px)';
+
+            // 执行动画
+            requestAnimationFrame(() => {
+                priceResult.style.transition = 'opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+                priceResult.style.opacity = 1;
+                priceResult.style.transform = 'translateY(0)';
+            });
+        }
+
+        // 计算价格
+        calculateBtn.addEventListener('click', function () {
+            // 获取所有选择值
+            const videoType = document.getElementById('video-type').value;
+            const duration = document.getElementById('video-duration').value;
+            const copywriting = document.getElementById('copywriting').value;
+            const production = document.getElementById('production-level').value;
+            const director = document.getElementById('director').value;
+            const actors = document.getElementById('actors').value;
+            const location = document.getElementById('location').value;
+
+            // 获取基础价格
+            const base = priceConfig.basePrice[videoType];
+            const fieldConfig = videoTypeFields[videoType];
+
+            // 应用各种系数和附加费用
+            let minPrice = base.min;
+            let maxPrice = base.max;
+
+            // 只计算显示的字段
+            if (fieldConfig['video-duration']) {
+                minPrice *= priceConfig.durationMultiplier[duration];
+                maxPrice *= priceConfig.durationMultiplier[duration];
+            }
+
+            if (fieldConfig['copywriting']) {
+                minPrice += priceConfig.copywritingPrice[copywriting];
+                maxPrice += priceConfig.copywritingPrice[copywriting];
+            }
+
+            if (fieldConfig['production-level']) {
+                minPrice += priceConfig.productionPrice[production];
+                maxPrice += priceConfig.productionPrice[production];
+            }
+
+            if (fieldConfig['director']) {
+                minPrice += priceConfig.directorPrice[director];
+                maxPrice += priceConfig.directorPrice[director];
+            }
+
+            if (fieldConfig['actors']) {
+                minPrice += priceConfig.actorsPrice[actors];
+                maxPrice += priceConfig.actorsPrice[actors];
+            }
+
+            if (fieldConfig['location']) {
+                minPrice += priceConfig.locationPrice[location];
+                maxPrice += priceConfig.locationPrice[location];
+            }
+
+            // 四舍五入
+            minPrice = Math.round(minPrice);
+            maxPrice = Math.round(maxPrice);
+
+            // 更新结果显示
+            updateResultDisplay({
+                videoType,
+                duration,
+                copywriting,
+                production,
+                director,
+                actors,
+                location
+            });
+
+            // 显示价格范围
+            finalPrice.textContent = `¥${minPrice.toLocaleString()}-${maxPrice.toLocaleString()}`;
+
+            // 显示结果区域
+            addAnimationToResult();
+
+            // 平滑滚动到结果部分
+            setTimeout(() => {
+                priceResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function () {
+            // 延迟100ms执行初始化，让页面先完成渲染
+            setTimeout(initForm, 100);
+        });
+    </script>
+</body>
+
+</html>
